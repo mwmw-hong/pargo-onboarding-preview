@@ -1,0 +1,698 @@
+<!doctype html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>PARGO — onboarding-animationer</title>
+<style>
+  :root {
+    color-scheme: light;
+    --green-dark: #07403f;
+    --green-light: #41665f;
+    --blue:       #2f6e8a;
+    --cream:      #f3f6f6;
+    --card-bg:    #eaf4f2;
+    --band-bg:    #cdd9d6;
+    --text:       #14313e;
+    /* Only used for the callout into the Parkér her button. It is the one hue
+       in the PARGO palette the app screenshot does not already contain, and it
+       echoes the success panel the flow arrow points at. */
+    --warm:       #b67e16;
+
+    /* Height-driven so a section always fits one viewport. */
+    --stage: min(38vh, 400px);
+    /* Taller than the illustration alone needs: the screens now carry a heading
+       above the art, progress pills, body and an action row. */
+    --phone-h: min(66vh, 580px);
+    --phone-w: calc(var(--phone-h) * 9 / 19.5);
+  }
+
+  * { box-sizing: border-box; }
+
+  /* The snap container is the document, not <main> -- <main> does not scroll,
+     so scroll-snap-type on it would be inert. scroll-padding-top keeps a
+     section heading clear of the sticky bar when 1/2 or an anchor lands on it. */
+  html {
+    scroll-behavior: smooth;
+    scroll-snap-type: y proximity;
+    scroll-padding-top: 44px;
+  }
+
+  body {
+    margin: 0;
+    background: #fff;
+    color: var(--text);
+    font-family: Geist, Arial, Helvetica, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .meta {
+    font-size: 12px;
+    letter-spacing: .04em;
+    color: color-mix(in srgb, var(--text) 60%, transparent);
+  }
+
+  /* ---------- title bar ---------- */
+
+  .bar {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 10px 24px;
+    background: color-mix(in srgb, #fff 88%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid color-mix(in srgb, var(--band-bg) 60%, transparent);
+  }
+
+  .bar .brand { font-size: 13px; font-weight: 600; letter-spacing: .01em; }
+  .bar nav { display: flex; gap: 14px; }
+  .bar a, .bar button {
+    font: inherit;
+    font-size: 12px;
+    letter-spacing: .04em;
+    color: color-mix(in srgb, var(--text) 60%, transparent);
+    background: none;
+    border: 0;
+    padding: 2px 0;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .bar a:hover, .bar button:hover { color: var(--blue); }
+  .bar .group { display: flex; align-items: center; gap: 16px; }
+
+  /* ---------- sections ---------- */
+
+  section {
+    scroll-snap-align: start;
+    scroll-margin-top: 44px;
+    padding: 34px 24px 46px;
+    min-height: calc(100vh - 43px);
+    display: flex;
+    flex-direction: column;
+  }
+
+  #animationer { background: var(--card-bg); }
+  #onboarding  { background: #fff; }
+  #efter-tryk  { background: var(--card-bg); }
+
+  h2 {
+    margin: 0 0 20px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: .06em;
+    color: color-mix(in srgb, var(--text) 60%, transparent);
+  }
+
+  .disclose {
+    margin: -12px 0 24px;
+    max-width: 62ch;
+    font-size: 12px;
+    line-height: 1.6;
+    color: color-mix(in srgb, var(--text) 60%, transparent);
+  }
+
+  /* ---------- section 1 : the animations ---------- */
+
+  .grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(2, var(--stage));
+    gap: 22px 40px;
+    align-content: center;
+    justify-content: center;
+  }
+
+  .cell { display: flex; flex-direction: column; gap: 8px; }
+
+  .stage {
+    width: var(--stage);
+    height: var(--stage);
+    cursor: zoom-in;
+    position: relative;
+  }
+  .stage svg { display: block; }
+
+  .cell .meta { text-align: left; }
+  .slug { font-variant-numeric: tabular-nums; }
+  .role { color: color-mix(in srgb, var(--text) 42%, transparent); }
+
+  /* the 96px check, behind the S key */
+  body.small { --stage: 96px; }
+  body.small .grid { gap: 18px 40px; }
+
+  /* ---------- the enlarge overlay ---------- */
+
+  #zoom {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    display: none;
+    place-items: center;
+    background: color-mix(in srgb, var(--green-dark) 52%, transparent);
+    backdrop-filter: blur(3px);
+    cursor: zoom-out;
+  }
+  #zoom.on { display: grid; }
+  #zoom .holder {
+    width: min(80vh, 800px);
+    height: min(80vh, 800px);
+    background: var(--card-bg);
+    border-radius: 6px;
+  }
+  #zoom .holder .stage { width: 100%; height: 100%; cursor: zoom-out; }
+
+  /* ---------- section 2 : the phones ---------- */
+
+  .phones {
+    flex: 1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 30px;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .phone {
+    width: var(--phone-w);
+    height: var(--phone-h);
+    container-type: inline-size;
+    background: #fff;
+    border: 1px solid color-mix(in srgb, var(--text) 16%, transparent);
+    border-radius: calc(var(--phone-w) * .13);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    /* DESIGN.md sanctions shadow on device mockups only. */
+    box-shadow: 0 18px 40px -24px color-mix(in srgb, var(--green-dark) 55%, transparent);
+  }
+
+  /* Sensor pills, not a status bar. No clock, no battery, no carrier -- those
+     are the details that turn an indication into something someone implements. */
+  .chrome {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding: 4cqw 7cqw 0;
+  }
+  .chrome i { display: block; height: 1.4cqw; width: 7cqw; border-radius: .7cqw; background: var(--band-bg); }
+  .chrome i:last-child { width: 4cqw; }
+
+  /* Holds heading, art, pills and body as one group and centres it in whatever
+     room is left over, so the body does not end up stranded far above the
+     action row. The action row and the home indicator stay pinned below it. */
+  .screen {
+    flex: 1;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .phone.bleed .screen { justify-content: flex-start; }
+
+  .phone h3 {
+    margin: 6cqw 0 0;
+    padding: 0 8cqw;
+    font-size: 6.4cqw;
+    line-height: 1.25;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .phone .art { width: 100%; padding: 4cqw 6cqw 0; }
+  .phone .art .stage {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    cursor: default;
+  }
+
+  /* Which of the three onboarding screens this is. */
+  .dots { display: flex; gap: 1.8cqw; margin-top: 3cqw; }
+  .dots i {
+    display: block;
+    height: 1.8cqw;
+    width: 5cqw;
+    border-radius: .9cqw;
+    background: var(--band-bg);
+  }
+  .dots i.on { width: 8cqw; background: var(--green-dark); }
+
+  .phone p {
+    margin: 4cqw 0 0;
+    padding: 0 8cqw;
+    font-size: 5cqw;
+    line-height: 1.5;
+    color: color-mix(in srgb, var(--text) 75%, transparent);
+  }
+
+  .actions {
+    padding: 5cqw 0 4cqw;
+    display: flex;
+    align-items: center;
+    gap: 5cqw;
+  }
+
+  .btn {
+    font: inherit;
+    font-size: 5cqw;
+    font-weight: 600;
+    line-height: 1;
+    padding: 4cqw 8cqw;
+    border-radius: 999px;
+    cursor: default;
+    border: 1.5px solid var(--green-dark);
+    background: #fff;
+    color: var(--green-dark);
+  }
+  .btn.solid { background: var(--green-dark); color: #fff; }
+  .skip { font-size: 5cqw; color: color-mix(in srgb, var(--text) 55%, transparent); }
+
+  /* The success state: full-bleed panel, then type, then one filled action. */
+  .phone.bleed .art { padding: 0; }
+  .phone.bleed h3 { margin-top: 7cqw; font-size: 7cqw; font-weight: 700; }
+  .phone.bleed .actions { padding-bottom: 5cqw; }
+  .phone.bleed .btn { padding: 4cqw 14cqw; }
+
+  /* ---------- section 3 : the tap, and what it should do ---------- */
+
+  .flow {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(16px, 4vw, 54px);
+    /* Room for the callout, which hangs off the left of the screenshot. */
+    padding-left: clamp(0px, 14vw, 170px);
+  }
+
+  /* The screenshot is 738x1600 and the drawn phone is 9:19.5 -- within half a
+     percent of each other, so at a shared height they come out the same width
+     and the pair reads as one comparison rather than two sizes. */
+  .shot {
+    position: relative;
+    margin: 0;
+    height: var(--phone-h);
+    aspect-ratio: 738 / 1600;
+    border-radius: calc(var(--phone-w) * .07);
+    overflow: hidden;
+    box-shadow: 0 18px 40px -24px color-mix(in srgb, var(--green-dark) 55%, transparent);
+  }
+  .shot img { display: block; width: 100%; height: 100%; object-fit: cover; }
+
+  /* An arrow into the button from outside the phone, rather than a ring around
+     it. A ring reads as "this control is selected", which is a UI state and the
+     wrong thing to say about a screenshot; an arrow reads as "look here", which
+     is the only thing meant. It also keeps every mark off the app's own pixels.
+     The button sits at 90.5% of the screenshot's height, which is where this
+     is pinned. */
+  .col.app { position: relative; }
+
+  .callout {
+    position: absolute;
+    right: calc(100% + 12px);
+    top: calc(var(--phone-h) * .905);
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    white-space: nowrap;
+    color: var(--warm);
+  }
+  .callout svg { width: clamp(34px, 5vw, 62px); height: auto; }
+  .callout span { font-size: 12px; font-weight: 600; letter-spacing: .02em; }
+
+  .arrow { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .arrow svg { width: clamp(38px, 6vw, 72px); height: auto; color: var(--green-dark); }
+
+  .pair-label { margin-top: 10px; text-align: center; }
+
+  .flow figure, .flow .col { display: flex; flex-direction: column; align-items: center; }
+
+  .home {
+    width: 30%;
+    height: 1.2cqw;
+    margin-bottom: 3cqw;
+    border-radius: .6cqw;
+    background: color-mix(in srgb, var(--text) 22%, transparent);
+  }
+
+  /* ---------- fallback ---------- */
+
+  .failed {
+    display: grid;
+    place-items: center;
+    width: 100%;
+    height: 100%;
+    background: var(--band-bg);
+    font-size: 11px;
+    letter-spacing: .04em;
+    color: color-mix(in srgb, var(--text) 60%, transparent);
+  }
+
+  /* ---------- narrow ---------- */
+
+  @media (max-width: 1100px) {
+    .phones { gap: 24px; }
+  }
+  /* Below this the callout has no room to hang off the left, so it moves under
+     the screenshot and turns to point up at the same button. */
+  @media (max-width: 940px) {
+    .flow { padding-left: 0; }
+    .col.app .shot { order: 1; }
+    .col.app .callout {
+      order: 2;
+      position: static;
+      transform: none;
+      margin-top: 10px;
+    }
+    .col.app .pair-label { order: 3; }
+    .callout svg { width: 34px; transform: rotate(-90deg); }
+  }
+  @media (max-width: 860px) {
+    :root { --stage: min(42vw, 340px); }
+    section { min-height: auto; }
+  }
+  @media (max-width: 620px) {
+    .grid { grid-template-columns: 1fr; }
+    section { padding: 26px 16px 36px; }
+    .bar { padding: 10px 16px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <span class="brand">PARGO — onboarding-animationer</span>
+  <span class="group">
+    <nav>
+      <a href="#animationer">1 Animationer</a>
+      <a href="#onboarding">2 Onboarding</a>
+      <a href="#efter-tryk">3 Efter tryk</a>
+    </nav>
+    <button type="button" id="toggle">Pause</button>
+    <button type="button" id="restart">Forfra</button>
+  </span>
+</div>
+
+<main>
+  <section id="animationer">
+    <h2>Animationerne</h2>
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <section id="onboarding">
+    <h2>Sådan ser det ud i appen</h2>
+    <p class="disclose">
+      Telefonrammen er kun en indikation, ikke et design. Teksterne er eksempler og ikke
+      endelige.
+    </p>
+    <div class="phones" id="phones"></div>
+  </section>
+
+  <section id="efter-tryk">
+    <h2>Når man trykker Parkér her</h2>
+    <div class="flow" id="flow">
+      <div class="col app">
+        <span class="callout">
+          <span>Parkér her</span>
+          <svg viewBox="0 0 62 16" fill="none" stroke="currentColor" stroke-width="2.2"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M1 8h56M48 1l8 7-8 7"/>
+          </svg>
+        </span>
+        <figure class="shot">
+          <img src="app-parkeringsdetaljer.jpg"
+               alt="PARGO's parkeringsdetaljer-skærm med knappen Parkér her nederst">
+        </figure>
+        <span class="meta pair-label">parkeringsdetaljer · i appen i dag</span>
+      </div>
+
+      <div class="arrow" aria-hidden="true">
+        <svg viewBox="0 0 72 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M2 12h64M56 3l10 9-10 9"/>
+        </svg>
+      </div>
+
+      <div class="col" id="success-slot">
+        <span class="meta pair-label">success-state · forslag</span>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div id="zoom"><div class="holder"></div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  // Poster frames are the reduced-motion resting pose, per each scene's build plan.
+  // `step` is which of the three onboarding screens this is, 0-indexed, and
+  // drives the progress pills. The success state has none: it is not part of
+  // the carousel, which is the distinction the full-bleed panel also carries.
+  var SCENES = [
+    {
+      slug: "find-and-understand", role: "onboarding", poster: 600, step: 0,
+      heading: "Få reglerne forklaret dér, hvor du holder",
+      body: "PARGO viser parkeringsregler ud fra din placering, dag og tidspunkt.",
+      cta: "Næste", skip: true
+    },
+    {
+      slug: "scan-parking-sign", role: "onboarding", poster: 345, step: 1,
+      heading: "Forstå skilte hurtigt",
+      body: "Tag et billede af skiltet og få en klar forklaring.",
+      cta: "Næste", skip: true
+    },
+    {
+      slug: "read-spot-reviews", role: "onboarding", poster: 150, step: 2,
+      heading: "Bliv klogere på parkeringsforhold",
+      body: "Læs erfaringer fra andre bilister i området og del dine egne.",
+      cta: "Kom i gang", solid: true
+    },
+    {
+      // The Lottie itself still carries no text -- the copy here is the app
+      // layer's, which is exactly what this mockup is for.
+      slug: "success-state", role: "bekræftelse", poster: 200,
+      heading: "Du er parkeret!",
+      body: "PARGO viser reglerne for pladsen, så længe du holder.",
+      cta: "Fortsæt", solid: true, bleed: true
+    }
+  ];
+
+  var reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var players = [];
+  var paused = reduced;
+
+  function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  }
+
+  function failed(host, slug) {
+    host.innerHTML = "";
+    host.appendChild(el("div", "failed", slug));
+  }
+
+  // --- build the DOM ---------------------------------------------------------
+
+  var grid = document.getElementById("grid");
+  var phones = document.getElementById("phones");
+
+  SCENES.forEach(function (scene) {
+    var cell = el("div", "cell");
+    scene.stageEl = el("div", "stage");
+    cell.appendChild(scene.stageEl);
+    var line = el("div", "meta");
+    line.appendChild(el("span", "slug", scene.slug));
+    line.appendChild(document.createTextNode(" · "));
+    line.appendChild(el("span", "role", scene.role));
+    cell.appendChild(line);
+    grid.appendChild(cell);
+
+    var phone = el("div", "phone" + (scene.bleed ? " bleed" : ""));
+
+    var art = el("div", "art");
+    scene.phoneEl = el("div", "stage");
+    art.appendChild(scene.phoneEl);
+
+    var screen = el("div", "screen");
+
+    // Onboarding puts the heading above the illustration and keeps the sensor
+    // pills. The success state leads with its full-bleed panel instead, which
+    // has to touch the top edge, so it gets no chrome above it.
+    if (scene.bleed) {
+      phone.appendChild(art);
+      screen.appendChild(el("h3", null, scene.heading));
+    } else {
+      var chrome = el("div", "chrome");
+      chrome.appendChild(el("i"));
+      chrome.appendChild(el("i"));
+      phone.appendChild(chrome);
+
+      screen.appendChild(el("h3", null, scene.heading));
+      screen.appendChild(art);
+      var dots = el("div", "dots");
+      for (var i = 0; i < 3; i += 1) dots.appendChild(el("i", i === scene.step ? "on" : null));
+      screen.appendChild(dots);
+    }
+
+    screen.appendChild(el("p", null, scene.body));
+    phone.appendChild(screen);
+
+    var actions = el("div", "actions");
+    actions.appendChild(el("button", "btn" + (scene.solid ? " solid" : ""), scene.cta));
+    if (scene.skip) actions.appendChild(el("span", "skip", "Spring over"));
+    phone.appendChild(actions);
+
+    phone.appendChild(el("div", "home"));
+    // The success state is not one of the three onboarding screens, so it
+    // lands beside the app screenshot in section 3 rather than in the row.
+    if (scene.bleed) document.getElementById("success-slot").prepend(phone);
+    else phones.appendChild(phone);
+  });
+
+  // --- load each scene ONCE, instantiate it twice ----------------------------
+  //
+  // lottie-web MUTATES the object it is handed, so each instance gets its own
+  // structuredClone of the parsed JSON. Fetching twice would double a 2.1MB
+  // payload for no reason.
+
+  function mount(host, data, scene) {
+    var anim = window.lottie.loadAnimation({
+      container: host,
+      renderer: "svg",
+      loop: true,
+      autoplay: false,
+      animationData: structuredClone(data),
+      assetsPath: "anim/",
+      rendererSettings: { preserveAspectRatio: "xMidYMid meet", progressiveLoad: false }
+    });
+    var state = { anim: anim, host: host, scene: scene, visible: true, started: false };
+    anim.addEventListener("DOMLoaded", function () {
+      if (reduced) anim.goToAndStop(scene.poster, true);
+      else apply(state);
+    });
+    players.push(state);
+    return state;
+  }
+
+  function apply(state) {
+    if (reduced && paused) return;
+    if (!paused && state.visible) {
+      if (!state.started) { state.anim.goToAndPlay(0, true); state.started = true; }
+      else state.anim.play();
+    } else {
+      state.anim.pause();
+    }
+  }
+
+  SCENES.forEach(function (scene) {
+    fetch("anim/" + scene.slug + ".json")
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function (data) {
+        mount(scene.stageEl, data, scene);
+        mount(scene.phoneEl, data, scene);
+      })
+      .catch(function () {
+        failed(scene.stageEl, scene.slug);
+        failed(scene.phoneEl, scene.slug);
+      });
+  });
+
+  // --- offscreen pause -------------------------------------------------------
+
+  if ("IntersectionObserver" in window) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        players.forEach(function (s) {
+          if (s.host === entry.target) { s.visible = entry.isIntersecting; apply(s); }
+        });
+      });
+    }, { rootMargin: "10%" });
+    var watch = setInterval(function () {
+      players.forEach(function (s) { if (!s.observed) { s.observed = true; io.observe(s.host); } });
+      if (players.length === SCENES.length * 2) clearInterval(watch);
+    }, 120);
+  }
+
+  // --- controls --------------------------------------------------------------
+
+  var toggleBtn = document.getElementById("toggle");
+  var restartBtn = document.getElementById("restart");
+  if (reduced) toggleBtn.textContent = "Afspil";
+
+  function setPaused(next) {
+    paused = next;
+    toggleBtn.textContent = paused ? "Afspil" : "Pause";
+    players.forEach(apply);
+  }
+
+  function restart() {
+    paused = false;
+    toggleBtn.textContent = "Pause";
+    players.forEach(function (s) {
+      s.started = true;
+      if (s.visible) s.anim.goToAndPlay(0, true); else s.anim.goToAndStop(0, true);
+    });
+  }
+
+  toggleBtn.addEventListener("click", function () { setPaused(!paused); });
+  restartBtn.addEventListener("click", restart);
+
+  // --- click a stage to enlarge ---------------------------------------------
+
+  var zoom = document.getElementById("zoom");
+  var holder = zoom.querySelector(".holder");
+  var home = null;
+
+  function closeZoom() {
+    if (!home) return;
+    home.parent.insertBefore(home.node, home.before);
+    home = null;
+    zoom.classList.remove("on");
+  }
+
+  grid.addEventListener("click", function (e) {
+    var stage = e.target.closest(".stage");
+    if (!stage) return;
+    closeZoom();
+    home = { node: stage, parent: stage.parentNode, before: stage.nextSibling };
+    holder.appendChild(stage);
+    zoom.classList.add("on");
+  });
+
+  zoom.addEventListener("click", closeZoom);
+
+  // --- keys ------------------------------------------------------------------
+
+  document.addEventListener("keydown", function (e) {
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    var k = e.key.toLowerCase();
+    if (e.key === " ") { e.preventDefault(); setPaused(!paused); }
+    else if (k === "r") restart();
+    else if (k === "s") document.body.classList.toggle("small");
+    else if (k === "escape") closeZoom();
+    else if (k === "1") document.getElementById("animationer").scrollIntoView();
+    else if (k === "2") document.getElementById("onboarding").scrollIntoView();
+    else if (k === "3") document.getElementById("efter-tryk").scrollIntoView();
+  });
+})();
+</script>
+</body>
+</html>
